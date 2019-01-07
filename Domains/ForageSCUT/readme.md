@@ -7,6 +7,13 @@
 |forage|2      |
 |escape|0      |
 
+## Run
+
+```bash
+# run.py -f <forage_class> -e <escape_class> -t <template_file>
+python run.py -f com.github.hy.simple.Forage -e com.github.hy.simple.Escape -t forage_without_obstacles.dsc.template
+```
+
 ## Strategy
 
 ### com.github.hy.simple
