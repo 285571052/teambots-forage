@@ -350,11 +350,11 @@ public class JCyeComm extends Thread
 
 		switch(Msg.GetMsgID()) 
 			{
-			case Msg.CMD_ISTART:
+			case JCyeMsg.CMD_ISTART:
     				SendMsgNum = 0;
     				Msg.SetTxMsgNum(SendMsgNum);
 				break;
-			case Msg.CMD_POLL_REQUEST:
+			case JCyeMsg.CMD_POLL_REQUEST:
 				Msg.SetTxMsgNum(SendMsgNum);
 				break;
 			default:
@@ -562,13 +562,13 @@ public class JCyeComm extends Thread
 						}
 					switch(i) 
 						{
-						case(Msg.ESC_STX):
+						case(JCyeMsg.ESC_STX):
 							Msg.Add(Msg.STX);
 							break;
-						case(Msg.ESC_ETX):
+						case(JCyeMsg.ESC_ETX):
 							Msg.Add(Msg.ETX);
 							break;
-						case(Msg.ESC):
+						case(JCyeMsg.ESC):
 							Msg.Add(Msg.ESC);
 							break;
 						}
@@ -630,7 +630,7 @@ public class JCyeComm extends Thread
 		{
 		switch(Msg.GetMsgID())
 			{
-			case Msg.REPLY_STATUS_UPDATE:
+			case JCyeMsg.REPLY_STATUS_UPDATE:
 				JCyeStatus stat = new JCyeStatus(Msg);
 				lastX = stat.GetX();
 				lastY = stat.GetY();
@@ -645,26 +645,26 @@ public class JCyeComm extends Thread
 					System.out.println("    Battery: " + lastB);
 					}
 				break;
-			case Msg.REPLY_OBSTACLE:
+			case JCyeMsg.REPLY_OBSTACLE:
 				if(DEBUG)
 					{
 					System.out.println("   Received obstacle update message.");
 					}
 				sawObstacle = true;
 				break;
-			case Msg.REPLY_CHARGE:
+			case JCyeMsg.REPLY_CHARGE:
 				if(DEBUG) 
 					{	   
 					System.out.println("   Received charge state update message.");
 					}
 				break;
-			case Msg.REPLY_SOFTWARE_REV:
+			case JCyeMsg.REPLY_SOFTWARE_REV:
 				if(DEBUG) 
 					{
 					System.out.println("   Received software revision number message.");
 					}
 				break;
-			case Msg.REPLY_AT_HOME:
+			case JCyeMsg.REPLY_AT_HOME:
 				if(DEBUG) 
 					{
 					System.out.println("   Received robot at home message.");

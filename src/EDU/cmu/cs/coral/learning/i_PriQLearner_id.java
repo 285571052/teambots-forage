@@ -12,7 +12,15 @@ import EDU.cmu.cs.coral.util.*;
 //import com.sun.java.util.collections.*;
 
 // uncomment next line if you are using JDK 1.2 or later
-import java.util.*;
+// import java.util.*;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Comparator;
 
 /**
  * An object that learns to select from several actions based on
