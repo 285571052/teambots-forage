@@ -103,6 +103,9 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 
 		NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_HISROTY0);
 
+		NodeVec2 MS_MOVE_TO_HISTORY_MOMENTUM = new v_Momentum(MS_MOVE_TO_HISTORY, 0.1);
+
+		NodeVec2 MS_NOISE_VECTOR_MOMENTUM = new v_Momentum(MS_NOISE_VECTOR, 0.1);
 		// ======
 		// AS_WANDER
 		// ======
@@ -117,9 +120,11 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		AS_WANDER.weights[2] = 1.0;
 		AS_WANDER.embedded[2] = MS_MOVE_TO_HISTORY; // 靠近通信的目标
 
-		AS_WANDER.weights[3] = 1.0;
-		AS_WANDER.embedded[3] = MS_MOVE_TO_HISTORY; // 靠近通信的目标
+		AS_WANDER.weights[3] = 0.1;
+		AS_WANDER.embedded[3] = MS_NOISE_VECTOR_MOMENTUM; // 保持向运动的趋势
 
+		AS_WANDER.weights[4] = 0.1;
+		AS_WANDER.embedded[4] = MS_MOVE_TO_HISTORY_MOMENTUM; // 保持向运动的趋势
 		// ======
 		// AS_GO_TO_TARGET0
 		// ======
