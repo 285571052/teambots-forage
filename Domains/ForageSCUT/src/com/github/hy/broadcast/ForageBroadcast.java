@@ -101,10 +101,6 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		NodeVec2 MS_NOISE_VECTOR = new v_Noise_(5, seed);
 		// 在每个状态的每个动作时, 都增加一定的随机变化量
 
-		// swirl obstacles wrt noise
-		NodeVec2 MS_SWIRL_OBSTACLES_NOISE = new v_Swirl_vav(2.0, abstract_robot.RADIUS + 0.1, PS_OBS, MS_NOISE_VECTOR);
-
-		// go to target0 history
 		NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_HISROTY0);
 
 		// ======
@@ -112,14 +108,14 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		// ======
 		v_StaticWeightedSum_va AS_WANDER = new v_StaticWeightedSum_va();
 
-		AS_WANDER.weights[0] = 1.0;
+		AS_WANDER.weights[0] = 0.7;
 		AS_WANDER.embedded[0] = MS_AVOID_OBSTACLES; // 避开障碍
 
 		AS_WANDER.weights[1] = 0.7;
 		AS_WANDER.embedded[1] = MS_NOISE_VECTOR; // 随机移动
 
-		AS_WANDER.weights[2] = 0.7;
-		AS_WANDER.embedded[2] = MS_SWIRL_OBSTACLES_NOISE; // 绕障碍物转
+		AS_WANDER.weights[2] = 1.0;
+		AS_WANDER.embedded[2] = MS_MOVE_TO_HISTORY; // 靠近通信的目标
 
 		AS_WANDER.weights[3] = 1.0;
 		AS_WANDER.embedded[3] = MS_MOVE_TO_HISTORY; // 靠近通信的目标
