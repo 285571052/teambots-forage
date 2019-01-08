@@ -47,6 +47,8 @@ public class v_Momentum extends NodeVec2 {
             last_val.setr(last_val.r * agging_rate);
         }
 
+        Vec2 ret = new Vec2(last_val.x, last_val.y);
+
         if ((timestamp > lasttime) || (timestamp == -1)) {
             /*--- reset the timestamp ---*/
             if (timestamp > 0) {
@@ -56,6 +58,6 @@ public class v_Momentum extends NodeVec2 {
             last_val.add(src_val);
         }
 
-        return (new Vec2(last_val.x, last_val.y));
+        return (ret);
     }
 }

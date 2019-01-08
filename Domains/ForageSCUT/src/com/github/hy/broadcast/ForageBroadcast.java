@@ -103,7 +103,7 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 
 		NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_HISROTY0);
 
-		NodeVec2 MS_MOVE_TO_HISTORY_MOMENTUM = new v_Momentum(MS_MOVE_TO_HISTORY, 0.1);
+		NodeVec2 MS_MOVE_TO_HISTORY_MOMENTUM = new v_Momentum(MS_MOVE_TO_HISTORY, 0.3);
 
 		NodeVec2 MS_NOISE_VECTOR_MOMENTUM = new v_Momentum(MS_NOISE_VECTOR, 0.1);
 		// ======
