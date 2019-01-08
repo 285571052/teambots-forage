@@ -105,7 +105,7 @@ def main(argv):
     logger.debug('src_path: %s', src_path)
     logger.debug('dst_path: %s', dst_path)
     logger.debug('TBSimPath: %s', TBSimPath)
-    classpath = "{0};{1}".format(dst_path, TBSimPath)
+    classpath = "{0}{2}{1}".format(dst_path, TBSimPath, os.pathsep)
     logger.debug("classpath: %s", classpath)
 
     compile_cmd = 'find . -name "*.java" | xargs javac -encoding utf-8 -sourcepath {0} -cp {1} -d {2}'.format(
