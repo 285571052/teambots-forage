@@ -35,10 +35,6 @@ public class Forage extends ControlSystemMFN150 {
 		NodeVec2Array // the sonar readings
 		PS_OBS = new va_Obstacles_r(abstract_robot); // 获取感知到障碍物的位置
 
-		// --- homebase
-		NodeVec2 // the place to deliver
-		PS_HOMEBASE0_GLOBAL = new v_FixedPoint_(0.0, 0.0); // 固定点坐标, 中心
-
 		// --- targets of visual class 0
 		NodeVec2Array PS_TARGETS0_EGO = new va_VisualObjects_r(0, abstract_robot);
 		// 获取可视的目标, 判断是否有目标, 用于状态转移判
@@ -46,12 +42,9 @@ public class Forage extends ControlSystemMFN150 {
 		NodeVec2Array PS_TARGETS0_GLOBAL = new va_Add_vav(PS_TARGETS0_EGO, PS_GLOBAL_POS);
 		// 感知到目标和机器人的相对位置, 相加机器人的标, 获取目标的全局坐标
 
-		// --- filter out targets close to homebase
-		NodeVec2Array PS_TARGETS0_GLOBAL_FILT = new va_FilterOutClose_vva(-1, PS_HOMEBASE0_GLOBAL, PS_TARGETS0_GLOBAL); // 距离中心大于0.75的将被返回(小于0.75的将被视为已经采集完毕)
-
 		// --- make them egocentric
 		NodeVec2Array PS_TARGETS0_EGO_FILT = new va_Subtract_vav( // 计算和机器人的相对位置
-				PS_TARGETS0_GLOBAL_FILT, PS_GLOBAL_POS);
+				PS_TARGETS0_GLOBAL, PS_GLOBAL_POS);
 
 		// --- get the closest one
 		NodeVec2 PS_CLOSEST0 = new v_Closest_va(PS_TARGETS0_EGO_FILT); // 获取距离中心最近的目标
@@ -154,7 +147,7 @@ public class Forage extends ControlSystemMFN150 {
 		// STEER
 		result = steering_configuration.Value(curr_time);
 		abstract_robot.setSteerHeading(curr_time, result.t);
-		abstract_robot.setSpeed(curr_time, result.r);
+		abstract_robot.setSpeed(curr_time, 1.0);
 
 		// TURRET
 		result = turret_configuration.Value(curr_time);
