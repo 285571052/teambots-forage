@@ -13,6 +13,9 @@ public class ForageInertia extends ControlSystemMFN150 {
 	private NodeVec2 steering_configuration;
 	private i_FSA_ba STATE_MACHINE;
 	private int debug_last_state = 0;
+
+	private CachedValue cache_steering_result = new CachedVec2();
+
 	/**
 	 * Configure the control system using Clay.
 	 */
@@ -87,7 +90,7 @@ public class ForageInertia extends ControlSystemMFN150 {
 		// overwrite Value()
 		
 
-		NodeVec2 MS_KEEP_MOVING = new v_GetCached_v((CachedValue)MS_MOVE_TO_TARGET0);
+		NodeVec2 MS_KEEP_MOVING = new v_GetCached_v(cache_steering_result);
 		// 保持原来的移动方式
 
 		// noise vector
@@ -136,13 +139,13 @@ public class ForageInertia extends ControlSystemMFN150 {
 		AS_INERTIA.weights[0] = 1;
 		AS_INERTIA.embedded[0] = MS_AVOID_OBSTACLES; // 避障
 
-		AS_INERTIA.weights[1] = 2;
+		AS_INERTIA.weights[1] = 1.5;
 		AS_INERTIA.embedded[1] = MS_KEEP_MOVING; // 保持原来的运动趋势
 
 		AS_INERTIA.weights[2] = 1;
 		AS_INERTIA.embedded[2] = MS_SWIRL_OBSTACLES_TARGET0; // 旋转向目标
 
-		AS_INERTIA.weights[3] = 0.8;
+		AS_INERTIA.weights[3] = 1;
 		AS_INERTIA.embedded[3] = MS_NOISE_VECTOR; // 随机移动
 
 		// ======
@@ -154,18 +157,17 @@ public class ForageInertia extends ControlSystemMFN150 {
 
 		// STATE 0 WANDER
 		STATE_MACHINE.triggers[0][0] = PF_TARGET0_VISIBLE; // 是否发现目标
-		STATE_MACHINE.follow_on[0][0] = 1; // transition to ACQUIRE0
+		STATE_MACHINE.follow_on[0][0] = 1; // ACQUIRE0
 
 		// STATE 1 ACQUIRE0
 		STATE_MACHINE.triggers[1][0] = PF_NOT_TARGET0_VISIBLE;
-		STATE_MACHINE.follow_on[1][0] = 2; // transition to INERTIA
+		STATE_MACHINE.follow_on[1][0] = 2; // INERTIA
 
 		// STATE 2 INERTIA
 		STATE_MACHINE.triggers[2][0] = PF_INERTIA_TIMEOUT;
-		STATE_MACHINE.follow_on[2][0] = 0;
-
+		STATE_MACHINE.follow_on[2][0] = 0; // WONDER
 		STATE_MACHINE.triggers[2][1] = PF_TARGET0_VISIBLE;
-		STATE_MACHINE.follow_on[2][1] = 1;
+		STATE_MACHINE.follow_on[2][1] = 1; // ACQUIRE0
 
 		// ======
 		// STEERING
@@ -200,6 +202,8 @@ public class ForageInertia extends ControlSystemMFN150 {
 		result = steering_configuration.Value(curr_time);
 		abstract_robot.setSteerHeading(curr_time, result.t);
 		abstract_robot.setSpeed(curr_time, result.r);
+		
+		cache_steering_result.setCache(result);
 
 		// TURRET
 		result = turret_configuration.Value(curr_time);
@@ -213,11 +217,6 @@ public class ForageInertia extends ControlSystemMFN150 {
 			abstract_robot.setDisplayString("acquire");
 		else if (state == 2)
 			abstract_robot.setDisplayString("inertia");
-
-
-		if (debug_last_state == 1 && state == 0 && DEBUG) {			
-			System.out.println("XXX");
-		}
 
 		debug_last_state = state;
 

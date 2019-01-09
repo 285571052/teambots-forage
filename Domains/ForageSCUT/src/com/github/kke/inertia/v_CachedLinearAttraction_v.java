@@ -27,12 +27,18 @@ class v_CachedLinearAttraction_v extends v_LinearAttraction_v implements CachedV
     @Override
 	public Vec2 Value(long timestamp) {
         cached = super.Value(timestamp);
+        setCache(cached);
         return cached;
     }
 
     @Override
     public Vec2 getCached() {
         return cached;
+    }
+
+    @Override
+    public void setCache(Vec2 v) {
+        cached = new Vec2(v.x, v.y);
     }
 }
 
