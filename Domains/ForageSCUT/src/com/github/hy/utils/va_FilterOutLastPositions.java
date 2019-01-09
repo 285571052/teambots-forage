@@ -20,16 +20,18 @@ public class va_FilterOutLastPositions extends NodeVec2Array {
 
     Vec2 last_val[] = new Vec2[0];
     long lasttime = 0;
+    PositionsMessageType message_type;
 
     /**
      * Instantiate a va_VisualObjects_r node.
      *
      * @param msgs NodeMsgArray, the raw Messages to be filtered out.
      */
-    public va_FilterOutLastPositions(NodeMsgArray msgs) {
+    public va_FilterOutLastPositions(NodeMsgArray msgs, PositionsMessageType message_type) {
         if (DEBUG)
             System.out.println("va_FilterOutLastPositions: instantiated");
         this.msgs = msgs;
+        this.message_type = message_type;
     }
 
     /**
@@ -52,8 +54,10 @@ public class va_FilterOutLastPositions extends NodeVec2Array {
             Set<Vec2> positions = new HashSet<Vec2>();
             for (int i = arr_all.length - 1; i >= 0; i--) {
                 if (arr_all[i] instanceof PositionsMessage) {
-                    elements = ((PositionsMessage) arr_all[i]).val;
-                    Collections.addAll(positions, elements);
+                    if (((PositionsMessage) arr_all[i]).message_type == message_type) {
+                        elements = ((PositionsMessage) arr_all[i]).val;
+                        Collections.addAll(positions, elements);
+                    }
                 }
             }
             last_val = new Vec2[positions.size()];

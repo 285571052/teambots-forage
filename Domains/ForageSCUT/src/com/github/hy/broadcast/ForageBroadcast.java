@@ -57,7 +57,8 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		NodeMsgArray MSG_RECIEVE = new va_RecieveMessage(abstract_robot);
 
 		// --- filter out targets close to homebase
-		NodeVec2Array PS_TARGETS0_GLOBAL_BROADCAST = new va_FilterOutLastPositions(MSG_RECIEVE);
+		NodeVec2Array PS_TARGETS0_GLOBAL_BROADCAST = new va_FilterOutLastPositions(MSG_RECIEVE,
+				PositionsMessageType.HISTORY);
 
 		// --- make them egocentric
 		NodeVec2Array PS_TARGETS0_BROADCAST = new va_Subtract_vav( // 计算和机器人的相对位置
@@ -200,7 +201,7 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 
 		// BRODCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
 		if (state == 1) {
-			Message m = new PositionsMessage(targets0_global.Value(curr_time));
+			Message m = new PositionsMessage(targets0_global.Value(curr_time), PositionsMessageType.HISTORY);
 			abstract_robot.broadcast(m);
 		}
 
