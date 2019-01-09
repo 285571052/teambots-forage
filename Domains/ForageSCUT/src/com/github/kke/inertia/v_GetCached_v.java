@@ -3,7 +3,7 @@ package com.github.kke.inertia;
 import EDU.gatech.cc.is.clay.*;
 import EDU.gatech.cc.is.util.Vec2;
 
-class v_GetCached_v extends NodeVec2 {
+public class v_GetCached_v extends NodeVec2 {
 
     private CachedValue embedded = null;
 

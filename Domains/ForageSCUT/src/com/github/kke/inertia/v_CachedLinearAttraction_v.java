@@ -4,7 +4,7 @@ package com.github.kke.inertia;
 import EDU.gatech.cc.is.clay.*;
 import EDU.gatech.cc.is.util.*;
 
-class v_CachedLinearAttraction_v extends v_LinearAttraction_v implements CachedValue  {
+public class v_CachedLinearAttraction_v extends v_LinearAttraction_v implements CachedValue  {
     private Vec2 cached = null;
     /**
 	Instantiate a v_LinearAttraction_v schema.

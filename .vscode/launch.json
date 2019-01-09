@@ -14,9 +14,31 @@
             "cwd": "${workspaceFolder}/Domains/ForageSCUT/"
         },
 
+        {
+            "name": "Launch run.py(ForageBcastState)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Domains/ForageSCUT/run.py",
+            "args": [
+                "-f", "com.github.kke.bcaststate.ForageBcastState", 
+                "-e", "com.github.hy.simple.Escape", 
+                "-t", "forage_without_obstacles.dsc.template"
+            ],
+            "cwd": "${workspaceFolder}/Domains/ForageSCUT/"
+        },
 
-
-
+        {
+            "name": "Launch run.py(ForageBroadcast)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Domains/ForageSCUT/run.py",
+            "args": [
+                "-f", "com.github.hy.broadcast.ForageBroadcast", 
+                "-e", "com.github.hy.simple.Escape", 
+                "-t", "forage_without_obstacles.dsc.template"
+            ],
+            "cwd": "${workspaceFolder}/Domains/ForageSCUT/"
+        },
 
 
         
