@@ -4,5 +4,5 @@
 package com.github.hy.map;
 
 public enum MapStatus {
-    REACHABLE, UNREACHABLE
+    REACHABLE, UNREACHABLE, UNKNOWN
 };

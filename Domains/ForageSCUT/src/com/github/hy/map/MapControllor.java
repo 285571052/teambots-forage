@@ -10,6 +10,7 @@ import EDU.gatech.cc.is.abstractrobot.MultiForageN150;
 import EDU.gatech.cc.is.util.Vec2;
 import com.github.hy.utils.*;
 import EDU.gatech.cc.is.communication.*;
+import java.util.*;
 
 public class MapControllor {
     static final double sqrt2 = Math.sqrt(2);
@@ -119,21 +120,27 @@ public class MapControllor {
 
     public Vec2[] shortestPath(Vec2 start, Vec2 end) {
         // return the shortest path from the start point to the end point;
-        // 1. convert Vec2 to (int,int)
-        start.setx(convert(start.x));
-        start.setx(convert(start.y));
-        end.setx(convert(end.x));
-        end.setx(convert(end.y));
+        // 1. convert Vec2 to Pair(int,int)
+
+        int sx = convert(start.x);
+        int sy = convert(start.y);
+        int ex = convert(end.x);
+        int ey = convert(end.y);
 
         // 2. run algorithm on sparse_map
         SparseMap<MapStatus> realtime_map = getRealtimeMap();
 
-        Vec2[] ret = Algorithm.AStar(realtime_map, start, end);
+        List<Pair<Integer, Integer>> path = Algorithm.AStar(realtime_map, new Pair<Integer, Integer>(sx, sy),
+                new Pair<Integer, Integer>(ex, ey));
 
-        // 3. convert (int,int) to Vec2
-        for (int i = 0; i < ret.length; ++i) {
-            ret[i].setx(ret[i].x * granularity);
-            ret[i].setx(ret[i].y * granularity);
+        // 3. convert Pair(int,int) to Vec2
+        Vec2[] ret = new Vec2[path.size()];
+
+        int i = 0;
+        for (Pair<Integer, Integer> p : path) {
+            ret[i].setx(p.first * granularity);
+            ret[i].sety(p.second * granularity);
+            ++i;
         }
 
         return ret;
