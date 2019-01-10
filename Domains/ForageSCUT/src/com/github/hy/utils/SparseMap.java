@@ -40,6 +40,26 @@ public class SparseMap<T> implements Cloneable {
         return ret;
     }
 
+    public void changeAll(T from, T to) {
+        List<Pair<Integer, Integer>> list = new LinkedList<Pair<Integer, Integer>>();
+
+        for (Map.Entry<Integer, Map<Integer, T>> row_entry : elements.entrySet()) {
+            int x = row_entry.getKey();
+            for (Map.Entry<Integer, T> v_entry : row_entry.getValue().entrySet()) {
+                int y = v_entry.getKey();
+                T v = v_entry.getValue();
+                if (v == from) {
+                    list.add(new Pair<Integer, Integer>(x, y));
+                }
+            }
+        }
+
+        for (Pair<Integer, Integer> p : list) {
+            put(p.first, p.second, to);
+        }
+
+    }
+
     public static void main(String argv[]) {
         SparseMap<Integer> sparse_map = new SparseMap<Integer>();
         sparse_map.put(1, 2, 3);
