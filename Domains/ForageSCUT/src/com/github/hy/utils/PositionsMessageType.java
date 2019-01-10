@@ -4,5 +4,5 @@
 package com.github.hy.utils;
 
 public enum PositionsMessageType {
-    HISTORY
+    HISTORY, MAP_REACHABLE, MAP_MAP_UNREACHABLE
 };
