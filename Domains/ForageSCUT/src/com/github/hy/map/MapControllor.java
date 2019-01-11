@@ -5,7 +5,9 @@
 package com.github.hy.map;
 
 import com.github.hy.utils.PositionsMessageType;
-
+import java.io.FileWriter;
+import java.util.*;
+import java.io.*;
 import EDU.gatech.cc.is.abstractrobot.MultiForageN150;
 import EDU.gatech.cc.is.util.Vec2;
 import com.github.hy.utils.*;
@@ -41,6 +43,7 @@ public class MapControllor {
         // the reachable position
         Vec2[] obstacles = abstract_robot.getObstacles(-1);
         double min_r = abstract_robot.VISION_RANGE;
+        min_r = abstract_robot.RADIUS;
         for (int i = 0; i < obstacles.length; ++i) {
             if (obstacles[i].r < min_r) {
                 min_r = obstacles[i].r;
@@ -53,8 +56,8 @@ public class MapControllor {
         Vec2 pos = abstract_robot.getPosition(-1);
         double l = Math.ceil((pos.x - a) / granularity) * granularity;
         double r = Math.floor((pos.x + a) / granularity) * granularity;
-        double u = Math.floor((pos.y - a) / granularity) * granularity;
-        double d = Math.floor((pos.y + a) / granularity) * granularity;
+        double d = Math.floor((pos.y - a) / granularity) * granularity;
+        double u = Math.floor((pos.y + a) / granularity) * granularity;
 
         for (double i = l; i <= r; i += granularity) {
             for (double j = d; j <= u; j += granularity) {
@@ -134,16 +137,37 @@ public class MapControllor {
                 new Pair<Integer, Integer>(ex, ey));
 
         // 3. convert Pair(int,int) to Vec2
-        Vec2[] ret = new Vec2[path.size()];
+        Vec2[] ret;
+        if (path == null)
+            ret = new Vec2[0];
+        else {
+            ret = new Vec2[path.size()];
+            int i = 0;
 
-        int i = 0;
-        for (Pair<Integer, Integer> p : path) {
-            ret[i].setx(p.first * granularity);
-            ret[i].sety(p.second * granularity);
-            ++i;
+            // save("D:/Repository/teambots/Domains/ForageSCUT/src/com/github/hy/map/example/path.txt",
+            // path)
+            // sparse_map.save("D:/Repository/teambots/Domains/ForageSCUT/src/com/github/hy/map/example/map.txt")
+            for (Pair<Integer, Integer> p : path) {
+                ret[i] = new Vec2(p.first * granularity, p.second * granularity);
+                // ret[i].setx(p.first * granularity);
+                // ret[i].sety(p.second * granularity);
+                ++i;
+            }
         }
 
         return ret;
+    }
+
+    public void save(String file_path, List<Pair<Integer, Integer>> path) {
+        try {
+            FileWriter writer = new FileWriter(file_path);
+            for (Pair<Integer, Integer> p : path) {
+                writer.write("(" + p.first + "," + p.second + ")\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
