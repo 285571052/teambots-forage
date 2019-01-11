@@ -4,7 +4,9 @@
  */
 package com.github.hy.utils;
 
+import java.io.FileWriter;
 import java.util.*;
+import java.io.*;
 
 public class SparseMap<T> implements Cloneable {
     Map<Integer, Map<Integer, T>> elements = new HashMap<Integer, Map<Integer, T>>();
@@ -58,6 +60,31 @@ public class SparseMap<T> implements Cloneable {
             put(p.first, p.second, to);
         }
 
+    }
+
+    public int size() {
+        int cnt = 0;
+        for (Map.Entry<Integer, Map<Integer, T>> row_entry : elements.entrySet()) {
+            cnt += row_entry.getValue().size();
+        }
+        return cnt;
+    }
+
+    public void save(String file_path) {
+        try {
+            FileWriter writer = new FileWriter(file_path);
+            for (Map.Entry<Integer, Map<Integer, T>> row_entry : elements.entrySet()) {
+                int x = row_entry.getKey();
+                for (Map.Entry<Integer, T> v_entry : row_entry.getValue().entrySet()) {
+                    int y = v_entry.getKey();
+                    T v = v_entry.getValue();
+                    writer.write("(" + x + "," + y + "," + v + ")\n");
+                }
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String argv[]) {
