@@ -18,16 +18,24 @@ public class ForageMap extends ControlSystemMFN150 {
     private NodeVec2Array targets0_global;
     private i_FSA_ba STATE_MACHINE;
 
+    private int map_cached_size = 10;
+    private double granularity = 0.2;
+    private MapControllor mapControllor;
+    NodeVec2Array PS_REACHABLE_POSITIONS_BROADCAST;
+
     /**
      * Configure the control system using Clay.
      */
     public void configure() {
+        mapControllor = new MapControllor(abstract_robot, map_cached_size, granularity);
         // ======
         // Set some initial hardware configurations.
         // ======
         abstract_robot.setObstacleMaxRange(3.0); // don't consider
         // things further away
         abstract_robot.setBaseSpeed(0.5 * abstract_robot.MAX_TRANSLATION);
+
+        NodeVec2 PS_CENTER = new v_FixedPoint_(0.0, 0.0); // the center ,Relative Position
 
         // ======
         // perceptual schemas
@@ -96,14 +104,18 @@ public class ForageMap extends ControlSystemMFN150 {
         // 绕障碍物转
 
         // go to target0
-        NodeVec2 MS_MOVE_TO_TARGET0 = new v_LinearAttraction_v(0.4, 0.0, PS_CLOSEST0);
+        NodeVec2 PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0 = new v_ShortestPathNextPosition(0.4, mapControllor,
+                PS_GLOBAL_POS, PS_CENTER, PS_CLOSEST0);
+        NodeVec2 MS_MOVE_TO_TARGET0 = new v_LinearAttraction_v(0.4, 0.0, PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0);
         // 移动到目标需要的向量
 
         // noise vector
         NodeVec2 MS_NOISE_VECTOR = new v_Noise_(5, seed);
         // 在每个状态的每个动作时, 都增加一定的随机变化量
 
-        NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_HISROTY0);
+        NodeVec2 PS_NEXT_ALONG_SHORTESTPATH_TO_HISTORY = new v_ShortestPathNextPosition(0.4, mapControllor,
+                PS_GLOBAL_POS, PS_CENTER, PS_HISROTY0);
+        NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_NEXT_ALONG_SHORTESTPATH_TO_HISTORY);
 
         NodeVec2 MS_MOVE_TO_HISTORY_MOMENTUM = new v_Momentum(MS_MOVE_TO_HISTORY, 0.5);
 
@@ -175,6 +187,8 @@ public class ForageMap extends ControlSystemMFN150 {
         turret_configuration = TURRET;
         steering_configuration = STEERING;
         targets0_global = PS_TARGETS0_GLOBAL;
+        PS_REACHABLE_POSITIONS_BROADCAST = new va_FilterOutLastPositions(MSG_RECIEVE,
+                PositionsMessageType.MAP_REACHABLE);
     }
 
     /**
@@ -183,6 +197,10 @@ public class ForageMap extends ControlSystemMFN150 {
     public int takeStep() {
         Vec2 result;
         long curr_time = abstract_robot.getTime();
+
+        // CACHE ADN BROADCAST MAP POSITIONS MESSAGE
+        mapControllor.collectAndBroadcastCurrentPos();
+        mapControllor.updateMap(PS_REACHABLE_POSITIONS_BROADCAST.Value(curr_time), MapStatus.REACHABLE);
 
         // STEER
         result = steering_configuration.Value(curr_time);
@@ -200,7 +218,7 @@ public class ForageMap extends ControlSystemMFN150 {
         else if (state == 1)
             abstract_robot.setDisplayString("acquire");
 
-        // BRODCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
+        // BROADCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
         if (state == 1) {
             Message m = new PositionsMessage(targets0_global.Value(curr_time), PositionsMessageType.HISTORY);
             abstract_robot.broadcast(m);
