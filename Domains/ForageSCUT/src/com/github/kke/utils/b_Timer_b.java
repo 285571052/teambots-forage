@@ -1,4 +1,4 @@
-package com.github.kke.inertia;
+package com.github.kke.utils;
 
 import EDU.gatech.cc.is.clay.*;
 
