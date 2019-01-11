@@ -74,10 +74,6 @@ public class Forage extends ControlSystemMFN150 {
 		NodeVec2 MS_NOISE_VECTOR = new v_Noise_(5, seed);
 		// 在每个状态的每个动作时, 都增加一定的随机变化量
 
-		// swirl obstacles wrt noise
-		NodeVec2 MS_SWIRL_OBSTACLES_NOISE = new v_Swirl_vav(2.0, abstract_robot.RADIUS + 0.1, PS_OBS, MS_NOISE_VECTOR);
-
-		// ======
 		// AS_WANDER
 		// ======
 		v_StaticWeightedSum_va AS_WANDER = new v_StaticWeightedSum_va();
@@ -87,9 +83,6 @@ public class Forage extends ControlSystemMFN150 {
 
 		AS_WANDER.weights[1] = 1.0;
 		AS_WANDER.embedded[1] = MS_NOISE_VECTOR; // 随机移动
-
-		AS_WANDER.weights[2] = 1.0;
-		AS_WANDER.embedded[2] = MS_SWIRL_OBSTACLES_NOISE; // 绕障碍物转
 
 		// ======
 		// AS_GO_TO_TARGET0

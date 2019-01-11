@@ -57,7 +57,8 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		NodeMsgArray MSG_RECIEVE = new va_RecieveMessage(abstract_robot);
 
 		// --- filter out targets close to homebase
-		NodeVec2Array PS_TARGETS0_GLOBAL_BROADCAST = new va_FilterOutLastPositions(MSG_RECIEVE);
+		NodeVec2Array PS_TARGETS0_GLOBAL_BROADCAST = new va_FilterOutLastPositions(MSG_RECIEVE,
+				PositionsMessageType.HISTORY);
 
 		// --- make them egocentric
 		NodeVec2Array PS_TARGETS0_BROADCAST = new va_Subtract_vav( // 计算和机器人的相对位置
@@ -101,29 +102,30 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		NodeVec2 MS_NOISE_VECTOR = new v_Noise_(5, seed);
 		// 在每个状态的每个动作时, 都增加一定的随机变化量
 
-		// swirl obstacles wrt noise
-		NodeVec2 MS_SWIRL_OBSTACLES_NOISE = new v_Swirl_vav(2.0, abstract_robot.RADIUS + 0.1, PS_OBS, MS_NOISE_VECTOR);
-
-		// go to target0 history
 		NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_HISROTY0);
 
+		NodeVec2 MS_MOVE_TO_HISTORY_MOMENTUM = new v_Momentum(MS_MOVE_TO_HISTORY, 0.3);
+
+		NodeVec2 MS_NOISE_VECTOR_MOMENTUM = new v_Momentum(MS_NOISE_VECTOR, 0.1);
 		// ======
 		// AS_WANDER
 		// ======
 		v_StaticWeightedSum_va AS_WANDER = new v_StaticWeightedSum_va();
 
-		AS_WANDER.weights[0] = 1.0;
+		AS_WANDER.weights[0] = 0.7;
 		AS_WANDER.embedded[0] = MS_AVOID_OBSTACLES; // 避开障碍
 
 		AS_WANDER.weights[1] = 0.7;
 		AS_WANDER.embedded[1] = MS_NOISE_VECTOR; // 随机移动
 
-		AS_WANDER.weights[2] = 0.7;
-		AS_WANDER.embedded[2] = MS_SWIRL_OBSTACLES_NOISE; // 绕障碍物转
+		AS_WANDER.weights[2] = 1.0;
+		AS_WANDER.embedded[2] = MS_MOVE_TO_HISTORY; // 靠近通信的目标
 
-		AS_WANDER.weights[3] = 1.0;
-		AS_WANDER.embedded[3] = MS_MOVE_TO_HISTORY; // 靠近通信的目标
+		AS_WANDER.weights[3] = 0.1;
+		AS_WANDER.embedded[3] = MS_NOISE_VECTOR_MOMENTUM; // 保持向运动的趋势
 
+		AS_WANDER.weights[4] = 0.1;
+		AS_WANDER.embedded[4] = MS_MOVE_TO_HISTORY_MOMENTUM; // 保持向运动的趋势
 		// ======
 		// AS_GO_TO_TARGET0
 		// ======
@@ -199,7 +201,7 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 
 		// BRODCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
 		if (state == 1) {
-			Message m = new PositionsMessage(targets0_global.Value(curr_time));
+			Message m = new PositionsMessage(targets0_global.Value(curr_time), PositionsMessageType.HISTORY);
 			abstract_robot.broadcast(m);
 		}
 

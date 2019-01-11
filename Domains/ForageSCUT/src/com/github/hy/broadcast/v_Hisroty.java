@@ -65,8 +65,10 @@ public class v_Hisroty extends NodeVec2 {
             }
         }
         last_val = last_node.Value(timestamp);
-        last_val.setr(last_r);
 
+        if (last_val.r < 1)// 已经到达目标附近
+            last_r = 0;
+        last_val.setr(last_r);
         if (last_r < 0.05) {
             last_r = 0;
         } else if (last_r > 0) {

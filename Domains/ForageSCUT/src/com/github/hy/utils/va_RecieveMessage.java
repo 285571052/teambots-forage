@@ -6,7 +6,7 @@ package com.github.hy.utils;
 
 import EDU.gatech.cc.is.communication.Transceiver;
 import java.util.Enumeration;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import EDU.gatech.cc.is.communication.*;
 
@@ -49,7 +49,7 @@ public class va_RecieveMessage extends NodeMsgArray {
                 lasttime = timestamp;
 
             /*--- while there are messages in the queue ---*/
-            List<Message> retList = new ArrayList<Message>();
+            List<Message> retList = new LinkedList<Message>();
             while (abstract_robot.connected() && messagesin.hasMoreElements()) {
                 Message msg = (Message) messagesin.nextElement();
                 retList.add(msg);
