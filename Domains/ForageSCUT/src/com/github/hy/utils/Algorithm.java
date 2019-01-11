@@ -30,9 +30,9 @@ public class Algorithm {
 
         // Overriding compare()method of Comparator
         public int compare(Pair<Double, Pair<Integer, Integer>> s1, Pair<Double, Pair<Integer, Integer>> s2) {
-            if (s1.first < s2.first)
+            if (s1.first > s2.first)
                 return 1;
-            else if (s1.first > s2.first)
+            else if (s1.first < s2.first)
                 return -1;
             return 0;
         }
@@ -42,12 +42,18 @@ public class Algorithm {
             Pair<Integer, Integer> end) {
         // return the shortest path from the start point to the end point using A start
         // algorithm.
-
+        if (start.first == end.first && start.second == end.second) {
+            return null;
+        }
         // set all REACHABLE to UNKNOWN
         sparse_map.changeAll(MapStatus.REACHABLE, MapStatus.UNKNOWN);
         Pair<Integer, Integer> new_end = new Pair<Integer, Integer>(start.first, start.second);
         getLatest(sparse_map, start, end, new_end);
         end = new_end;
+
+        if (start.first == end.first && start.second == end.second) {
+            return null;
+        }
 
         // do A star
         SparseMap<Boolean> closed = new SparseMap<Boolean>();
@@ -131,20 +137,27 @@ public class Algorithm {
     static private void getLatest(SparseMap<MapStatus> sparse_map, Pair<Integer, Integer> current,
             Pair<Integer, Integer> end, Pair<Integer, Integer> closest) {
         // get the closest point to 'end', which is reachable start from 'start'
-        sparse_map.put(current.first, current.second, MapStatus.REACHABLE);
-        if (current.first == end.first && current.second == end.second) {
-            closest.first = end.first;
-            closest.second = end.second;
-            return;
-        } else if (distance(current, end) < distance(closest, end)) {
-            closest.first = current.first;
-            closest.second = current.second;
-        }
-        for (int i = 0; i < dx.length; ++i) {
-            int x = current.first + dx[i];
-            int y = current.second + dy[i];
-            if (sparse_map.get(x, y) == MapStatus.UNKNOWN) {
-                getLatest(sparse_map, new Pair<Integer, Integer>(x, y), end, closest);
+        Stack<Pair<Integer, Integer>> stack = new Stack<Pair<Integer, Integer>>();
+        stack.push(current);
+
+        while (!stack.empty()) {
+            current = stack.pop();
+            sparse_map.put(current.first, current.second, MapStatus.REACHABLE);
+            if (current.first == end.first && current.second == end.second) {
+                closest.first = end.first;
+                closest.second = end.second;
+                return;
+            } else if (distance(current, end) < distance(closest, end)) {
+                closest.first = current.first;
+                closest.second = current.second;
+            }
+            for (int i = 0; i < dx.length; ++i) {
+                int x = current.first + dx[i];
+                int y = current.second + dy[i];
+                if (sparse_map.get(x, y) == MapStatus.UNKNOWN) {
+                    stack.push(new Pair<Integer, Integer>(x, y));
+                    // getLatest(sparse_map, new Pair<Integer, Integer>(x, y), end, closest);
+                }
             }
         }
     }
@@ -166,7 +179,7 @@ public class Algorithm {
     }
 
     public static void main(String argv[]) {
-        // TODO: TEST if Iterger pass by value?
+        // TODO: TEST if Integer pass by value?
         Integer a = 1;
         Integer b = a;
         b = 2;
