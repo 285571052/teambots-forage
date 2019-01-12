@@ -12,24 +12,8 @@ import EDU.gatech.cc.is.communication.*;
 import com.github.hy.utils.*;
 import com.github.kke.utils.*;
 
-//class Debug_b_Not_s extends b_Not_s {
-//
-//	/**
-//	 * Instantiate a b_Not_s operator.
-//	 *
-//	 * @param im1 NodeScalar, the embedded perceptual schema that generates a value
-//	 *            to be inverted.
-//	 */
-//	public Debug_b_Not_s(NodeScalar im1) {
-//		super(im1);
-//	}
-//
-//
-//	public boolean Value(long timestamp) {
-//		Boolean b = super.Value(timestamp);
-//		return b;
-//	}
-//}
+import java.util.*;
+
 
 public class ForageBcastState extends ControlSystemMFN150 {
 	public final static boolean DEBUG = true;
@@ -59,7 +43,7 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		// Set some initial hardware configurations.
 		// ======
 		abstract_robot.setObstacleMaxRange(3.0);
-		abstract_robot.setBaseSpeed(0.3 * abstract_robot.MAX_TRANSLATION);
+		abstract_robot.setBaseSpeed(0.4 * abstract_robot.MAX_TRANSLATION);
 
 		// ======
 		// perceptual schemas
@@ -85,7 +69,7 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		// 获得所有广播消息
 		NodeMsgArray MSG_RECIEVE = new va_RecieveMessage(abstract_robot);
 		// 过滤
-		NodeVec2Array PS_BCAST_GLOBAL = new va_FilterOutLastPositions(MSG_RECIEVE, PositionsMessageType.LEADER_REQUEST);
+		NodeVec2Array PS_BCAST_GLOBAL = new va_FilterOutLastPositions(MSG_RECIEVE, PositionsMessageType.LEADER);
 		// 转换为EGO坐标
 		NodeVec2Array PS_BCAST_EGO_FILT = new va_Subtract_vav(PS_BCAST_GLOBAL, PS_GLOBAL_POS);
 		// 挑离自己最近的
@@ -103,7 +87,6 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		// 目标仍然在可视范围内
 		NodeBoolean PF_TARGET_VISIBLE = new b_NonZero_v(PS_CLOSEST);
 		// 目标逃离可视范围
-//		NodeBoolean PF_NOT_TARGET_VISIBLE = new b_Not_s(PF_TARGET_VISIBLE);
 		NodeBoolean PF_NOT_TARGET_VISIBLE = new b_Not_s(PF_TARGET_VISIBLE);
 		// 收到广播消息
 		NodeBoolean PF_BCAST_RECEIVED = new b_NonZero_v(PS_CLOSEST_BCAST);
@@ -111,7 +94,7 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		// 保存距离自己最近的广播GLOBAL目标
 		cached_closest_bcast_global = new v_Cache_vb(PS_CLOSEST_BCAST_GLOBAL, PF_BCAST_RECEIVED);
 
-
+//		NodeBoolean PF_BCAST_NOT_RECEIVED = new b_Not_s(PF_BCAST_RECEIVED);
 		// 已经到达广播目标附近
 		NodeBoolean PF_NEAR_CLOSEST_BCAST = new b_LessThan_v(
 				new v_GlobalToEgo_rv(abstract_robot, cached_closest_bcast_global),
@@ -191,11 +174,11 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		AS_INFORMED.weights[1] = 1.5;
 		AS_INFORMED.embedded[1] = MS_MOVE_TO_CLOSEST_BCAST; // 向广播目标前进
 
-		AS_INFORMED.weights[2] = 1;
-		AS_INFORMED.embedded[2] = MS_SWIRL_OBSTACLES_TARGET0; // 旋转向目标
+		AS_INFORMED.weights[2] = 0.7;
+		AS_INFORMED.embedded[2] = MS_NOISE_VECTOR; // 随机移动
 
-		AS_INFORMED.weights[3] = 0.3;
-		AS_INFORMED.embedded[3] = MS_NOISE_VECTOR; // 随机移动
+//		AS_INFORMED.weights[3] = 1;
+//		AS_INFORMED.embedded[3] = MS_SWIRL_OBSTACLES_TARGET0; // 旋转向目标
 
 		// ======
 		// AS_INERTIA
@@ -205,13 +188,13 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		AS_INERTIA.weights[0] = 0.6;
 		AS_INERTIA.embedded[0] = MS_AVOID_OBSTACLES; // 避障
 
-		AS_INERTIA.weights[1] = 2;
+		AS_INERTIA.weights[1] = 1.5;
 		AS_INERTIA.embedded[1] = MS_MOVE_TO_HISTORY; // 继续运动到原来的目标
 
 		AS_INERTIA.weights[2] = 1;
 		AS_INERTIA.embedded[2] = MS_SWIRL_OBSTACLES_TARGET0; // 旋转向目标
 
-		AS_INERTIA.weights[3] = 0.2;
+		AS_INERTIA.weights[3] = 0.5;
 		AS_INERTIA.embedded[3] = MS_NOISE_VECTOR; // 随机移动
 
 		// ======
@@ -297,75 +280,11 @@ public class ForageBcastState extends ControlSystemMFN150 {
 				break;
 			}
 			case 1: {
-				abstract_robot.setDisplayString("acquire");
-
-				cached_closest_global.storeValue(curr_time);
-				cached_history_global.switchNode(cached_closest_global);
-				cached_history_global.storeValue(curr_time);
-
-				Vec2[] va = targets0_global.Value(curr_time);
-				// BRODCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
-				Message m = new SourcePositionMessage(
-						va,
-						PositionsMessageType.LEADER_REQUEST,
-						abstract_robot.getID());
-
-				abstract_robot.broadcast(m);
-
-				Vec2 v = cached_closest_global.Value(curr_time);
-				System.out.printf(
-						"%d acquire target global(%f,%f) bcast\n",
-						abstract_robot.getID(), v.x, v.y);
-
-				if (has_follower_replys.Value(curr_time)) {
-					for (int id: gather_followers.ids) {
-						System.out.printf("\tFollower: %d\n", id);
-					}
-				}
-
+				actionOnAcquire(curr_time);
 				break;
 			}
 			case 2: {
-				abstract_robot.setDisplayString("informed");
-
-				cached_closest_bcast_global.storeValue(curr_time);
-				cached_history_global.switchNode(cached_closest_bcast_global);
-				cached_history_global.storeValue(curr_time);
-
-				Vec2 v = cached_closest_bcast_global.Value(curr_time);
-				int sender = find_bcast_leader.intValue(curr_time);
-				System.out.printf(
-						"%d informed bcast global(%f,%f) from %d\n",
-						abstract_robot.getID(), v.x, v.y, sender);
-
-				// 把自己的单播给自己选择的leader。
-				if (sender != SourcePositionMessage.NO_ID) {
-
-					Message m = new SourcePositionMessage(
-							abstract_robot.getPosition(curr_time),
-							PositionsMessageType.FOLLOWER_REPLY,
-							abstract_robot.getID()
-					);
-					try {
-						abstract_robot.unicast(sender, m);
-					} catch (CommunicationException e) {
-						e.printStackTrace();
-					}
-				}
-
-
-//				Message m = new PositionsMessage(
-//						abstract_robot.getPosition(curr_time),
-//						PositionsMessageType.FOLLOWER_REPLY
-//				);
-//
-//				int leader = find_bcast_leader.Value(curr_time);
-//				try {
-//					abstract_robot.unicast(leader, m);
-//				} catch (CommunicationException e) {
-//					System.out.println(e.getMessage());
-//				}
-
+				actionOnInformed(curr_time);
 				break;
 			}
 			case 3: {
@@ -383,9 +302,237 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		return (CSSTAT_OK);
 	}
 
+	public void actionOnInformed(long timestamp) {
+		abstract_robot.setDisplayString("informed");
+
+		cached_closest_bcast_global.storeValue(timestamp);
+		cached_history_global.switchNode(cached_closest_bcast_global);
+		cached_history_global.storeValue(timestamp);
+
+		Vec2 v = cached_closest_bcast_global.Value(timestamp);
+		int sender = find_bcast_leader.intValue(timestamp);
+		System.out.printf(
+				"%d informed bcast global(%f,%f) from %d\n",
+				abstract_robot.getID(), v.x, v.y, sender);
+
+		// 把自己的单播给自己选择的leader。
+		if (sender != SourcePositionMessage.NO_ID) {
+
+			Message m = new SourcePositionMessage(
+					abstract_robot.getPosition(timestamp),
+					PositionsMessageType.FOLLOWER,
+					abstract_robot.getID()
+			);
+			try {
+				abstract_robot.unicast(sender, m);
+			} catch (CommunicationException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void actionOnAcquire(long timestamp) {
+		abstract_robot.setDisplayString("acquire");
+
+		cached_closest_global.storeValue(timestamp);
+		cached_history_global.switchNode(cached_closest_global);
+		cached_history_global.storeValue(timestamp);
+
+
+		Vec2 v = cached_closest_global.Value(timestamp);
+		System.out.printf(
+				"%d acquire target global(%f,%f) bcast\n",
+				abstract_robot.getID(), v.x, v.y);
+
+		if (has_follower_replys.Value(timestamp)) {
+
+			for (int id: gather_followers.ids) {
+				System.out.printf("\tFollower: %d\n", id);
+			}
+
+			Vec2[] followers = gather_followers.Value(timestamp);
+			Vec2[] targets = targets0_global.Value(timestamp);
+
+			Vec2[] result = positionAssignment(followers, targets, abstract_robot.getPosition(timestamp), 2);
+			int[] ids = gather_followers.ids;
+			for (int i = 0; i < followers.length; ++i) {
+
+				System.out.printf("\tcaculated:(%f,%f)\n", result[i].x, result[i].y);
+
+				Message m = new SourcePositionMessage(
+						result[i],
+						PositionsMessageType.LEADER,
+						abstract_robot.getID());
+
+				try {
+					abstract_robot.unicast(ids[i], m);
+				} catch (CommunicationException e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			Vec2[] va = targets0_global.Value(timestamp);
+			// BRODCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
+			Message m = new SourcePositionMessage(
+					va,
+					PositionsMessageType.LEADER,
+					abstract_robot.getID());
+
+			abstract_robot.broadcast(m);
+		}
+	}
+
+	private static Vec2[] positionAssignment(Vec2[] followers, Vec2[] targets, Vec2 from, double minimumRadius) {
+	    double sumx = 0, sumy = 0;
+	    for (Vec2 v: targets) {
+	        sumx += v.x;
+	        sumy += v.y;
+        }
+
+	    Vec2 c = new Vec2(sumx / targets.length, sumy / targets.length);
+
+	    double r_sq = minimumRadius * minimumRadius;
+	    for (Vec2 v: targets) {
+	        double tmp = (v.x - c.x) * (v.x - c.x) + (v.y - c.y) *(v.y - c.y);
+            r_sq = Math.max(r_sq, tmp);
+        }
+
+	    double r = Math.sqrt(r_sq);
+
+		List<Vec2> tmpFollowers = new LinkedList<>();
+		List<Vec2> tmpPositions = new LinkedList<>();
+
+		for (int i = 0; i < followers.length; ++i) {
+			Vec2 position = new Vec2(from.x, from.y);
+			position.sub(c);
+
+	        position.setr(r);
+			position.rotate(Math.PI * 2 / (followers.length+1) * (i+1));
+	        position.add(c);
+
+			tmpPositions.add(position);
+			tmpFollowers.add(followers[i]);
+		}
+
+
+		Map<Vec2, Vec2> followerAssignment = new HashMap<>();
+		Map<Vec2, Vec2> positionAssignment = positionAssignment(tmpFollowers, tmpPositions);
+		for(Map.Entry<Vec2, Vec2> entry: positionAssignment.entrySet()) {
+			followerAssignment.put(entry.getValue(), entry.getKey());
+		}
+
+		Vec2[] ret = new Vec2[followers.length];
+		for (int i = 0; i < ret.length; ++i) {
+			ret[i] = followerAssignment.get(followers[i]);
+		}
+
+	    return ret;
+    }
+
+    private static Map<Vec2, Vec2> positionAssignment(List<Vec2> followers, List<Vec2> positions) {
+        if (followers.size() == 0 && positions.size() == 0)
+            return new HashMap<>();
+
+        assert !followers.isEmpty();
+        assert !positions.isEmpty();
+        assert followers.size() == positions.size();
+
+        Map<Vec2, Vec2> currentAssignment = new HashMap<>();
+
+        List<Vec2> remain_followers = new LinkedList<>();
+
+        for(Vec2 current_follower : followers) {
+            double dist = Double.MAX_VALUE;
+            Vec2 candidate_position = null;
+
+            for(Vec2 position : positions) {
+                // calculate distance
+                position.sub(current_follower);
+                // always select the closest position against the follower
+                if (dist > position.r) {
+                    dist = position.r;
+                    candidate_position = position;
+                }
+                position.add(current_follower);
+            }
+            assert candidate_position != null;
+            if (currentAssignment.containsKey(candidate_position)) { // position has been chosen
+                Vec2 old_follower = currentAssignment.get(candidate_position);
+                // calculate distance
+				candidate_position.sub(old_follower);
+                // always choose a follower having the longest distance against the position
+                if (dist > candidate_position.r) {
+                    currentAssignment.put(candidate_position, current_follower);
+                    remain_followers.add(old_follower);     // put the old one into remain list
+                } else {
+                    remain_followers.add(current_follower);
+                }
+                candidate_position.add(old_follower);
+            } else {
+                currentAssignment.put(candidate_position, current_follower);
+            }
+        }
+
+        List<Vec2> remain_positions = new LinkedList<>();
+        for(Vec2 position: positions) {
+            if (!currentAssignment.containsKey(position)) {
+                remain_positions.add(position);
+            }
+        }
+
+        Map<Vec2, Vec2> subAssignment = positionAssignment(remain_followers, remain_positions);
+        currentAssignment.putAll(subAssignment);
+        return currentAssignment;
+    }
+
 	public static void main(String[] args) {
 	    System.out.println("Hello, world!");
 
+		{
+			List<Vec2> positions = new LinkedList<>();
+			positions.add(new Vec2(-2,0));
+			positions.add(new Vec2(0,2));
+			positions.add(new Vec2(2, 0));
+
+			List<Vec2> followers = new LinkedList<>();
+			followers.add(new Vec2(0, 3));
+			followers.add(new Vec2(0, 4));
+			followers.add(new Vec2(0,5));
+
+			Map<Vec2, Vec2> m = positionAssignment(followers, positions);
+
+			System.out.println(1);
+		}
+		{
+			Vec2[] followers = new Vec2[3];
+			followers[0] = new Vec2(0,7);
+			followers[1] = new Vec2(0,8);
+			followers[2] = new Vec2(0,9);
+
+			Vec2[] target = new Vec2[1];
+			target[0] = new Vec2(0,0);
+
+			Vec2 from = new Vec2(0,4);
+
+			Vec2[] m = positionAssignment(followers, target, from, 2);
+
+			System.out.println(2);
+		}
+		{
+			Vec2[] followers = new Vec2[3];
+			followers[0] = new Vec2(-9,0);
+			followers[1] = new Vec2(-8,0);
+			followers[2] = new Vec2(-7,0);
+
+			Vec2[] target = new Vec2[1];
+			target[0] = new Vec2(6,0);
+
+			Vec2 from = new Vec2(1,0);
+
+			Vec2[] m = positionAssignment(followers, target, from, 2);
+
+			System.out.println(3);
+		}
     }
 	
 }

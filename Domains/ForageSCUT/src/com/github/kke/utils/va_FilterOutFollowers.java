@@ -15,13 +15,13 @@ public class va_FilterOutFollowers extends va_FilterOutLastPositions {
      * @param msgs         NodeMsgArray, the raw Messages to be filtered out.
      */
     public va_FilterOutFollowers(NodeMsgArray msgs) {
-        super(msgs, PositionsMessageType.FOLLOWER_REPLY);
+        super(msgs, PositionsMessageType.FOLLOWER);
     }
 
     @Override
     protected boolean filter(Message message) {
         return message instanceof SourcePositionMessage
-                && ((SourcePositionMessage)message).message_type == PositionsMessageType.FOLLOWER_REPLY;
+                && ((SourcePositionMessage)message).message_type == PositionsMessageType.FOLLOWER;
     }
 
     @Override

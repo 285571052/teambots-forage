@@ -20,6 +20,11 @@ public class i_FindLeader_vma extends NodeInt {
         this.choice = choice;
     }
 
+    /**
+     *
+     * @param timestamp long indicates time of the request
+     * @return leader's id
+     */
     @Override
     public int Value(long timestamp) {
         if ((timestamp > lasttime) || (timestamp == -1)) {
@@ -34,7 +39,7 @@ public class i_FindLeader_vma extends NodeInt {
             for (int i = msgs.length-1; i >= 0; i--) {
                 if (msgs[i] instanceof SourcePositionMessage) {
                     SourcePositionMessage spm = (SourcePositionMessage)msgs[i];
-                    if (spm.message_type == PositionsMessageType.LEADER_REQUEST && containedInMsg(v, spm)) {
+                    if (spm.message_type == PositionsMessageType.LEADER && containedInMsg(v, spm)) {
                         last_value = spm.srcid;
                         break;
                     }

@@ -23,18 +23,21 @@ public class Escape extends ControlSystemMFN150 {
 		// ======
 		abstract_robot.setObstacleMaxRange(3.0); // don't consider
 		// things further away
-		abstract_robot.setBaseSpeed(abstract_robot.MAX_TRANSLATION);
+		abstract_robot.setBaseSpeed(0.6*abstract_robot.MAX_TRANSLATION);
 
 		// --- obstacles
 		NodeVec2Array // the sonar readings
 		PS_OBS = new va_Obstacles_r(abstract_robot); // 获取感知到障碍物的位置
 
+		NodeVec2Array PS_FORAGE_EGO = new va_VisualObjects_r(2, abstract_robot);
 		// ======
 		// motor schemas
 		// ======
 		// avoid obstacles
 		NodeVec2 MS_AVOID_OBSTACLES = new v_Avoid_va(1.5, abstract_robot.RADIUS + 0.1, PS_OBS);
 		// 每个障碍物会产生一个排斥量来促使机器人调整移动方向, 该函数返回最后综合的调整
+		NodeVec2 MS_AVOID_FORAGE = new v_Avoid_va(1.5, MultiForageN150.VISION_RANGE, PS_FORAGE_EGO);
+
 
 		// noise vector
 		NodeVec2 MS_NOISE_VECTOR = new v_Noise_(5, seed);
@@ -42,6 +45,8 @@ public class Escape extends ControlSystemMFN150 {
 
 		// swirl obstacles wrt noise
 		NodeVec2 MS_SWIRL_OBSTACLES_NOISE = new v_Swirl_vav(2.0, abstract_robot.RADIUS + 0.1, PS_OBS, MS_NOISE_VECTOR);
+
+
 
 		// ======
 		// AS_WANDER
@@ -56,6 +61,9 @@ public class Escape extends ControlSystemMFN150 {
 
 		AS_WANDER.weights[2] = 1.0;
 		AS_WANDER.embedded[2] = MS_SWIRL_OBSTACLES_NOISE; // 随机旋转
+
+		AS_WANDER.weights[3] = 2;
+		AS_WANDER.embedded[3] = MS_AVOID_FORAGE;
 
 		// ======
 		// STATE_MACHINE

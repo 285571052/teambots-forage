@@ -23,7 +23,7 @@ public class Forage extends ControlSystemMFN150 {
 		// ======
 		abstract_robot.setObstacleMaxRange(3.0); // don't consider
 		// things further away
-		abstract_robot.setBaseSpeed(0.5 * abstract_robot.MAX_TRANSLATION);
+		abstract_robot.setBaseSpeed(0.4 * abstract_robot.MAX_TRANSLATION);
 
 		// ======
 		// perceptual schemas

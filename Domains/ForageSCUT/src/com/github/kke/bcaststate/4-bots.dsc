@@ -13,7 +13,7 @@
 // the same as the graphical area set aside by the simulation, then
 // the robots may wander off the screen.
 
-bounds -5 5 -5 5
+bounds -10 10 -6 6
 
 
 //======
@@ -48,7 +48,7 @@ timestep 100 // 1/10th of a second
 // The windowsize statement gives a default window size.  This can be
 // overridden on the command line.
 
-windowsize 500 500
+windowsize 800 600
 
 
 //======
@@ -109,13 +109,3 @@ robot EDU.gatech.cc.is.abstractrobot.MultiForageN150Sim
 // class.  That way when the simulated sensors of robots look for things
 // they can be sorted by this identifier.
 
-// obstacles
-object EDU.gatech.cc.is.simulation.ObstacleSim -2.0 -1.0 0 0.30 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim 3.0 2.0 0 0.10 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim 3.3 1.8 0 0.30 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim -4  4 0 0.25 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim 4  -3.5 0 0.25 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim 3.5 -2 0 0.25 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim -3.5 -2 0 0.25 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim 3.5 -2 0 0.25 xC0C0C0 x000000 2
-object EDU.gatech.cc.is.simulation.ObstacleSim 4.0 4.0 0 0.25 xC0C0C0 x000000 2
