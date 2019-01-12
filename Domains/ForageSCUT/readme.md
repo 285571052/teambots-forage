@@ -12,6 +12,8 @@
 ```bash
 # run.py -f <forage_class> -e <escape_class> -t <template_file>
 python run.py -f com.github.hy.simple.Forage -e com.github.hy.simple.Escape -t forage_without_obstacles.dsc.template
+python run.py -f com.github.hy.broadcast.ForageBroadcast -e com.github.hy.simple.Escape -t forage.dsc.template
+python run.py -f com.github.hy.map.ForageMap -e com.github.hy.simple.Escape -t forage.2.dsc.template
 ```
 
 ## Strategy
