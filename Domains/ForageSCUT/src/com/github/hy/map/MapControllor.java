@@ -43,7 +43,7 @@ public class MapControllor {
         // the reachable position
         Vec2[] obstacles = abstract_robot.getObstacles(-1);
         double min_r = abstract_robot.VISION_RANGE;
-        min_r = abstract_robot.RADIUS;
+        // min_r = abstract_robot.RADIUS;
         for (int i = 0; i < obstacles.length; ++i) {
             if (obstacles[i].r < min_r) {
                 min_r = obstacles[i].r;
