@@ -67,9 +67,15 @@ public class v_ShortestPathNextPosition extends NodeVec2 {
                 Vec2[] path = mapControllor.shortestPath(start_local_val, end_local_val);
 
                 if (path.length > 1) {
-                    last_val = (Vec2) path[1].clone();
+                    if (path.length > 5) {
+                        last_val = (Vec2) path[4].clone();
+                    } else {
+                        last_val = (Vec2) path[path.length - 1].clone();
+                    }
+
+                    // last_val = (Vec2) path[1].clone();
                     last_val.sub(global_base_val);
-                    last_val.setr(1.0);
+                    // last_val.setr(1.0);
                     // for (int i = 0; i < path.length; ++i) {
                     // path[i].sub(global_base_val);
                     // if (path[i].r > 0.3) {
@@ -77,7 +83,7 @@ public class v_ShortestPathNextPosition extends NodeVec2 {
                     // break;
                     // } else {
                     // last_val = (Vec2) path[i].clone();
-                    // last_val.setr(1.0);
+                    // last_val.setr(0);
                     // }
                     // }
                 }
