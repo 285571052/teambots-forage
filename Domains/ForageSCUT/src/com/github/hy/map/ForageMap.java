@@ -106,10 +106,10 @@ public class ForageMap extends ControlSystemMFN150 {
         // go to target0
         NodeVec2 PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0 = new v_ShortestPathNextPosition(0.4, mapControllor,
                 PS_GLOBAL_POS, PS_CENTER, PS_CLOSEST0);
-        NodeVec2 MS_MOVE_TO_TARGET02 = PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0;
+        NodeVec2 MS_MOVE_TO_TARGET0 = PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0;
         // NodeVec2 MS_MOVE_TO_TARGET0 = new v_LinearAttraction_v(0.3, 0.0,
         // PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0);
-        NodeVec2 MS_MOVE_TO_TARGET0 = new v_LinearAttraction_v(0.3, 0.0, PS_CLOSEST0);
+        NodeVec2 MS_MOVE_TO_TARGET02 = new v_LinearAttraction_v(0.3, 0.0, PS_CLOSEST0);
         // 移动到目标需要的向量
 
         // noise vector
