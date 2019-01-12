@@ -43,6 +43,10 @@ public class ForageBcastState extends ControlSystemMFN150 {
 	private v_Cache_vb cached_closest_bcast_global = null;
 	private v_Cache_v cached_history_global = new v_Cache_v(null);
 
+	private NodeInt find_bcast_leader = null;
+	private va_FilterOutFollowers gather_followers = null;
+	private NodeBoolean has_follower_replys = null;
+
 //	private NodeVec2 debug_cached_closest_target_global = null;
 //	private NodeVec2 debug_cached_closest_bcast_global = null;
 //	private NodeVec2 debug_cached_inertia_history_global = null;
@@ -80,8 +84,8 @@ public class ForageBcastState extends ControlSystemMFN150 {
 
 		// 获得所有广播消息
 		NodeMsgArray MSG_RECIEVE = new va_RecieveMessage(abstract_robot);
-		// 过滤剩下自己需要的
-		NodeVec2Array PS_BCAST_GLOBAL = new va_FilterOutLastPositions(MSG_RECIEVE, PositionsMessageType.HISTORY);
+		// 过滤
+		NodeVec2Array PS_BCAST_GLOBAL = new va_FilterOutLastPositions(MSG_RECIEVE, PositionsMessageType.LEADER_REQUEST);
 		// 转换为EGO坐标
 		NodeVec2Array PS_BCAST_EGO_FILT = new va_Subtract_vav(PS_BCAST_GLOBAL, PS_GLOBAL_POS);
 		// 挑离自己最近的
@@ -89,13 +93,9 @@ public class ForageBcastState extends ControlSystemMFN150 {
 		// 转换为global坐标
 		NodeVec2 PS_CLOSEST_BCAST_GLOBAL = new v_EgoToGlobal_rv(abstract_robot, PS_CLOSEST_BCAST);
 
-
-		// 从广播中得到响应的其他机器人
-		// NodeVec2Array PS_BCAST_TEAMMATES_GLOBAL = new va_FilterOutLastPositions(MSG_RECIEVE, PositionsMessageType.POS_TEAMMATES);
-		
-
-		// NodeVec2Array PS_TEAMMATES = new va_Teammates_r(abstract_robot);
-
+		find_bcast_leader = new i_FindLeader_vma(PS_CLOSEST_BCAST_GLOBAL, MSG_RECIEVE);
+		gather_followers = new va_FilterOutFollowers(MSG_RECIEVE);
+		has_follower_replys = new b_NonZero_va(gather_followers);
 
 		// ======
 		// Perceptual Features
@@ -305,11 +305,23 @@ public class ForageBcastState extends ControlSystemMFN150 {
 
 				Vec2[] va = targets0_global.Value(curr_time);
 				// BRODCAST POSITION OF TARTGET0 TO OTHER TEAMMATES
-				Message m = new PositionsMessage(va, PositionsMessageType.HISTORY);
+				Message m = new SourcePositionMessage(
+						va,
+						PositionsMessageType.LEADER_REQUEST,
+						abstract_robot.getID());
+
 				abstract_robot.broadcast(m);
 
-//				Vec2 v = cached_closest_global.Value(curr_time);
-//				System.out.print(abstract_robot.getID() + " acquire target global(x:" + v.x + " y:" + v.y + ")\n");
+				Vec2 v = cached_closest_global.Value(curr_time);
+				System.out.printf(
+						"%d acquire target global(%f,%f) bcast\n",
+						abstract_robot.getID(), v.x, v.y);
+
+				if (has_follower_replys.Value(curr_time)) {
+					for (int id: gather_followers.ids) {
+						System.out.printf("\tFollower: %d\n", id);
+					}
+				}
 
 				break;
 			}
@@ -320,8 +332,39 @@ public class ForageBcastState extends ControlSystemMFN150 {
 				cached_history_global.switchNode(cached_closest_bcast_global);
 				cached_history_global.storeValue(curr_time);
 
-//				Vec2 v = cached_closest_bcast_global.Value(curr_time);
-//				System.out.print(abstract_robot.getID() + " informed bcast  global(x:" + v.x + " y:" + v.y + ")\n");
+				Vec2 v = cached_closest_bcast_global.Value(curr_time);
+				int sender = find_bcast_leader.intValue(curr_time);
+				System.out.printf(
+						"%d informed bcast global(%f,%f) from %d\n",
+						abstract_robot.getID(), v.x, v.y, sender);
+
+				// 把自己的单播给自己选择的leader。
+				if (sender != SourcePositionMessage.NO_ID) {
+
+					Message m = new SourcePositionMessage(
+							abstract_robot.getPosition(curr_time),
+							PositionsMessageType.FOLLOWER_REPLY,
+							abstract_robot.getID()
+					);
+					try {
+						abstract_robot.unicast(sender, m);
+					} catch (CommunicationException e) {
+						e.printStackTrace();
+					}
+				}
+
+
+//				Message m = new PositionsMessage(
+//						abstract_robot.getPosition(curr_time),
+//						PositionsMessageType.FOLLOWER_REPLY
+//				);
+//
+//				int leader = find_bcast_leader.Value(curr_time);
+//				try {
+//					abstract_robot.unicast(leader, m);
+//				} catch (CommunicationException e) {
+//					System.out.println(e.getMessage());
+//				}
 
 				break;
 			}

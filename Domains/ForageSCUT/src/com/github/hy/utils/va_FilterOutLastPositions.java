@@ -7,9 +7,10 @@ package com.github.hy.utils;
 import EDU.gatech.cc.is.clay.*;
 import EDU.gatech.cc.is.util.Vec2;
 import EDU.gatech.cc.is.communication.*;
+
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Collections;
 
 public class va_FilterOutLastPositions extends NodeVec2Array {
     /**
@@ -22,6 +23,9 @@ public class va_FilterOutLastPositions extends NodeVec2Array {
     long lasttime = 0;
     PositionsMessageType message_type;
 
+    private int[] indices;
+    private Message[] allMsgs;
+
     /**
      * Instantiate a va_VisualObjects_r node.
      *
@@ -32,6 +36,22 @@ public class va_FilterOutLastPositions extends NodeVec2Array {
             System.out.println("va_FilterOutLastPositions: instantiated");
         this.msgs = msgs;
         this.message_type = message_type;
+    }
+
+    private void filterOutIndices() {
+        int[] temp_indices = new int[allMsgs.length];
+        int len = 0;
+        for (int i = allMsgs.length-1; i >= 0 ; i--)
+            if (filter(allMsgs[i]))
+                temp_indices[len++] = i;
+
+        indices = new int[len];
+        for (int i = 0; i < len; i++)
+            indices[i] = temp_indices[i];
+    }
+
+    protected boolean filter(Message message) {
+        return message instanceof PositionsMessage && ((PositionsMessage)message).message_type == message_type;
     }
 
     /**
@@ -49,17 +69,16 @@ public class va_FilterOutLastPositions extends NodeVec2Array {
             }
 
             /*--- count ---*/
-            Message[] arr_all = msgs.Value(timestamp);
-            Vec2[] elements = new Vec2[0];
-            Set<Vec2> positions = new HashSet<Vec2>();
-            for (int i = arr_all.length - 1; i >= 0; i--) {
-                if (arr_all[i] instanceof PositionsMessage) {
-                    if (((PositionsMessage) arr_all[i]).message_type == message_type) {
-                        elements = ((PositionsMessage) arr_all[i]).val;
-                        Collections.addAll(positions, elements);
-                    }
-                }
+            allMsgs = msgs.Value(timestamp);
+
+            filterOutIndices();
+            Set<Vec2> positions = new HashSet<>();
+
+            for (int index: indices) {
+                PositionsMessage pm = (PositionsMessage)allMsgs[index];
+                Collections.addAll(positions, pm.val);
             }
+
             last_val = new Vec2[positions.size()];
             last_val = positions.toArray(last_val);
         }
@@ -69,5 +88,21 @@ public class va_FilterOutLastPositions extends NodeVec2Array {
             retval[i] = new Vec2(last_val[i].x, last_val[i].y);
 
         return (retval);
+    }
+
+    protected int[] getIndices() {
+        return indices;
+    }
+
+    protected long getLasttime() {
+        return lasttime;
+    }
+
+    protected Message[] getAllMessages() {
+        return allMsgs;
+    }
+
+    protected Vec2[] getLastVal() {
+        return last_val;
     }
 }
