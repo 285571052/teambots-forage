@@ -46,10 +46,11 @@ public class Algorithm {
             return null;
         }
         // set all REACHABLE to UNKNOWN
-        sparse_map.changeAll(MapStatus.REACHABLE, MapStatus.UNKNOWN);
-        Pair<Integer, Integer> new_end = new Pair<Integer, Integer>(start.first, start.second);
-        getLatest(sparse_map, start, end, new_end);
-        end = new_end;
+        // sparse_map.changeAll(MapStatus.REACHABLE, MapStatus.UNKNOWN);
+        // Pair<Integer, Integer> new_end = new Pair<Integer, Integer>(start.first,
+        // start.second);
+        // getLatest(sparse_map, start, end, new_end);
+        // end = new_end;
 
         if (start.first == end.first && start.second == end.second) {
             return null;
