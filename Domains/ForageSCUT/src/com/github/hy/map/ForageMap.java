@@ -106,7 +106,10 @@ public class ForageMap extends ControlSystemMFN150 {
         // go to target0
         NodeVec2 PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0 = new v_ShortestPathNextPosition(0.4, mapControllor,
                 PS_GLOBAL_POS, PS_CENTER, PS_CLOSEST0);
-        NodeVec2 MS_MOVE_TO_TARGET0 = new v_LinearAttraction_v(0.4, 0.0, PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0);
+        NodeVec2 MS_MOVE_TO_TARGET0 = PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0;
+        // NodeVec2 MS_MOVE_TO_TARGET0 = new v_LinearAttraction_v(0.3, 0.0,
+        // PS_NEXT_ALONG_SHORTESTPATH_TO_CLOSET0);
+        NodeVec2 MS_MOVE_TO_TARGET02 = new v_LinearAttraction_v(0.3, 0.0, PS_CLOSEST0);
         // 移动到目标需要的向量
 
         // noise vector
@@ -115,11 +118,18 @@ public class ForageMap extends ControlSystemMFN150 {
 
         NodeVec2 PS_NEXT_ALONG_SHORTESTPATH_TO_HISTORY = new v_ShortestPathNextPosition(0.4, mapControllor,
                 PS_GLOBAL_POS, PS_CENTER, PS_HISROTY0);
-        NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.4, 0.0, PS_NEXT_ALONG_SHORTESTPATH_TO_HISTORY);
+        NodeVec2 MS_MOVE_TO_HISTORY = PS_NEXT_ALONG_SHORTESTPATH_TO_HISTORY;
+        // NodeVec2 MS_MOVE_TO_HISTORY = new v_LinearAttraction_v(0.3, 0.0,
+        // PS_NEXT_ALONG_SHORTESTPATH_TO_HISTORY);
+        NodeVec2 MS_MOVE_TO_HISTORY2 = new v_LinearAttraction_v(0.3, 0.0, PS_HISROTY0);
 
         NodeVec2 MS_MOVE_TO_HISTORY_MOMENTUM = new v_Momentum(MS_MOVE_TO_HISTORY, 0.5);
 
         NodeVec2 MS_NOISE_VECTOR_MOMENTUM = new v_Momentum(MS_NOISE_VECTOR, 0.1);
+
+        // swirl obstacles wrt noise
+        NodeVec2 MS_SWIRL_OBSTACLES_NOISE = new v_Swirl_vav(0.5, abstract_robot.RADIUS + 0.1, PS_OBS, MS_NOISE_VECTOR);
+
         // ======
         // AS_WANDER
         // ======
@@ -139,6 +149,9 @@ public class ForageMap extends ControlSystemMFN150 {
 
         AS_WANDER.weights[4] = 0.1;
         AS_WANDER.embedded[4] = MS_MOVE_TO_HISTORY_MOMENTUM; // 保持向运动的趋势
+
+        AS_WANDER.weights[5] = 0.1;
+        AS_WANDER.embedded[5] = MS_SWIRL_OBSTACLES_NOISE; // 随机旋转
         // ======
         // AS_GO_TO_TARGET0
         // ======
@@ -205,7 +218,7 @@ public class ForageMap extends ControlSystemMFN150 {
         // STEER
         result = steering_configuration.Value(curr_time);
         abstract_robot.setSteerHeading(curr_time, result.t);
-        abstract_robot.setSpeed(curr_time, 1.0);
+        abstract_robot.setSpeed(curr_time, result.r > 0 ? 1.0 : 0.0);
 
         // TURRET
         result = turret_configuration.Value(curr_time);

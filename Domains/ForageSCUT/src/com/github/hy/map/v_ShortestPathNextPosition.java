@@ -58,30 +58,35 @@ public class v_ShortestPathNextPosition extends NodeVec2 {
             Vec2 start_local_val = start_local.Value(timestamp);
             Vec2 end_local_val = end_local.Value(timestamp);
             Vec2 global_base_val = global_base.Value(timestamp);
+            last_val.setr(0);
+            if (end_local_val.r > 0) {
 
-            start_local_val.add(global_base_val);
-            end_local_val.add(global_base_val);
+                start_local_val.add(global_base_val);
+                end_local_val.add(global_base_val);
 
-            Vec2[] path = mapControllor.shortestPath(start_local_val, end_local_val);
+                Vec2[] path = mapControllor.shortestPath(start_local_val, end_local_val);
 
-            if (path.length > 0) {
-                // System.out.println("path length:" + path.length);
-                last_val = (Vec2) end_local_val.clone();
-                last_val.sub(global_base_val);
-
-                for (int i = 0; i < path.length; ++i) {
-                    path[i].sub(global_base_val);
-                    if (path[i].r > 1.0) {
-                        last_val = (Vec2) path[i].clone();
-                        System.out.println("path length:" + path.length);
-                        break;
+                if (path.length > 1) {
+                    if (path.length > 5) {
+                        last_val = (Vec2) path[4].clone();
+                    } else {
+                        last_val = (Vec2) path[path.length - 1].clone();
                     }
+
+                    // last_val = (Vec2) path[1].clone();
+                    last_val.sub(global_base_val);
+                    // last_val.setr(1.0);
+                    // for (int i = 0; i < path.length; ++i) {
+                    // path[i].sub(global_base_val);
+                    // if (path[i].r > 0.3) {
+                    // // System.out.println(timestamp + ": 存在路径: go");
+                    // break;
+                    // } else {
+                    // last_val = (Vec2) path[i].clone();
+                    // last_val.setr(0);
+                    // }
+                    // }
                 }
-                // last_val = (Vec2) path[9].clone();
-                last_val.setr(1.0);
-            } else {
-                last_val = (Vec2) end_local_val.clone();
-                last_val.sub(global_base_val);
             }
 
         }

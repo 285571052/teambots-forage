@@ -27,13 +27,14 @@ public class v_Hisroty extends NodeVec2 {
             System.out.println("v_Hisroty: instantiated.");
         this.broadcast_cache = broadcast_cache;
         this.closest_cache = closest_cache;
-        last_node = broadcast_cache;
+        last_node = closest_cache;
         last_val.setr(0);
     }
 
     double last_r = 0;
     v_Cache last_node;
     Vec2 last_val = new Vec2();
+    Vec2 zero_val = new Vec2(0, 0);
 
     long lasttime = 0;
 
@@ -64,15 +65,18 @@ public class v_Hisroty extends NodeVec2 {
                 last_update = broadcast_cache.last_update;
             }
         }
-        last_val = last_node.Value(timestamp);
 
-        if (last_val.r < 1)// 已经到达目标附近
+        last_val = last_node.Value(timestamp);
+        if (last_r == 0 || last_val.r < 1) {
             last_r = 0;
-        last_val.setr(last_r);
-        if (last_r < 0.05) {
-            last_r = 0;
-        } else if (last_r > 0) {
+            return (Vec2) zero_val.clone();
+        }
+        if (last_r > 0.05) {
+            // System.out.println(timestamp + ":" + last_r);
             last_r = last_r * aging_rate;
+        } else if (last_r > 0) {
+            // System.out.println(timestamp + ":" + last_r);
+            last_r = 0;
         }
         return (new Vec2(last_val.x, last_val.y));
     }

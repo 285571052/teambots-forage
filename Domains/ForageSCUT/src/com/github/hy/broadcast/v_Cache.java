@@ -64,6 +64,8 @@ public class v_Cache extends NodeVec2 {
 
         Vec2 ret_val = (Vec2) last_val.clone();
         Vec2 robot_pos_global_val = robot_pos_global.Value(timestamp);
+        if (last_update == -1)
+            return (new Vec2(0, 0));
         ret_val.sub(robot_pos_global_val);
         return (new Vec2(ret_val.x, ret_val.y));
     }

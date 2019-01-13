@@ -12,7 +12,6 @@ import EDU.gatech.cc.is.abstractrobot.MultiForageN150;
 import EDU.gatech.cc.is.util.Vec2;
 import com.github.hy.utils.*;
 import EDU.gatech.cc.is.communication.*;
-import java.util.*;
 
 public class MapControllor {
     static final double sqrt2 = Math.sqrt(2);
@@ -43,7 +42,7 @@ public class MapControllor {
         // the reachable position
         Vec2[] obstacles = abstract_robot.getObstacles(-1);
         double min_r = abstract_robot.VISION_RANGE;
-        min_r = abstract_robot.RADIUS;
+        // min_r = abstract_robot.RADIUS;
         for (int i = 0; i < obstacles.length; ++i) {
             if (obstacles[i].r < min_r) {
                 min_r = obstacles[i].r;
@@ -114,11 +113,31 @@ public class MapControllor {
         return Math.toIntExact(Math.round(x / granularity));
     }
 
-    private SparseMap<MapStatus> getRealtimeMap() {
+    private SparseMap<MapStatus> getRealtimeMap(Vec2 target) {
         SparseMap<MapStatus> ret = sparse_map.clone();
         Vec2[] obstacles = abstract_robot.getObstacles(-1);
+        Vec2 pos = abstract_robot.getPosition(-1);
+
+        Vec2 tmp_tar = (Vec2) target.clone();
+        tmp_tar.sub(pos);
+
+        List<Vec2> list = new ArrayList<Vec2>(obstacles.length);
+        for (int i = 0; i < obstacles.length; ++i) {
+
+            // remove the point on targets
+            Vec2 tmp = (Vec2) obstacles[i].clone();
+            tmp.sub(tmp_tar);
+            if (tmp.r < 0.3)// tmp.r less than the radius of target (0.247), we set 0.3 here.
+                continue;
+
+            obstacles[i].add(pos);
+            list.add(obstacles[i]);
+        }
+
+        obstacles = new Vec2[list.size()];
+        obstacles = list.toArray(obstacles);
         updateMap(ret, obstacles, MapStatus.UNREACHABLE);
-        return sparse_map;
+        return ret;
     }
 
     public Vec2[] shortestPath(Vec2 start, Vec2 end) {
@@ -131,7 +150,7 @@ public class MapControllor {
         int ey = convert(end.y);
 
         // 2. run algorithm on sparse_map
-        SparseMap<MapStatus> realtime_map = getRealtimeMap();
+        SparseMap<MapStatus> realtime_map = getRealtimeMap(end);
 
         List<Pair<Integer, Integer>> path = Algorithm.AStar(realtime_map, new Pair<Integer, Integer>(sx, sy),
                 new Pair<Integer, Integer>(ex, ey));
@@ -146,7 +165,7 @@ public class MapControllor {
 
             // save("D:/Repository/teambots/Domains/ForageSCUT/src/com/github/hy/map/example/path.txt",
             // path)
-            // sparse_map.save("D:/Repository/teambots/Domains/ForageSCUT/src/com/github/hy/map/example/map.txt")
+            // realtime_map.save("D:/Repository/teambots/Domains/ForageSCUT/src/com/github/hy/map/example/map.txt")
             for (Pair<Integer, Integer> p : path) {
                 ret[i] = new Vec2(p.first * granularity, p.second * granularity);
                 // ret[i].setx(p.first * granularity);

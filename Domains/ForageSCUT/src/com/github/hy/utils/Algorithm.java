@@ -46,10 +46,11 @@ public class Algorithm {
             return null;
         }
         // set all REACHABLE to UNKNOWN
-        sparse_map.changeAll(MapStatus.REACHABLE, MapStatus.UNKNOWN);
-        Pair<Integer, Integer> new_end = new Pair<Integer, Integer>(start.first, start.second);
-        getLatest(sparse_map, start, end, new_end);
-        end = new_end;
+        // sparse_map.changeAll(MapStatus.REACHABLE, MapStatus.UNKNOWN);
+        // Pair<Integer, Integer> new_end = new Pair<Integer, Integer>(start.first,
+        // start.second);
+        // getLatest(sparse_map, start, end, new_end);
+        // end = new_end;
 
         if (start.first == end.first && start.second == end.second) {
             return null;
@@ -82,7 +83,7 @@ public class Algorithm {
                     return tracePath(cells, end);
                 } else if (!Boolean.TRUE.equals(closed.get(x, y)) && sparse_map.get(x, y) == MapStatus.REACHABLE) {
                     g_new = cells.get(p_pos.first, p_pos.second).g + 1.0;
-                    h_new = heuristic(p_Successor, end);
+                    h_new = heuristic(start, p_Successor, end);
                     f_new = g_new + h_new;
 
                     AStarCell tmp = cells.get(x, y);
@@ -162,8 +163,13 @@ public class Algorithm {
         }
     }
 
-    static double heuristic(Pair<Integer, Integer> x, Pair<Integer, Integer> end) {
-        return distance(x, end);
+    static double heuristic(Pair<Integer, Integer> start, Pair<Integer, Integer> x, Pair<Integer, Integer> end) {
+        double dx1 = x.first - end.first;
+        double dy1 = x.second - end.second;
+        double dx2 = start.first - end.first;
+        double dy2 = start.second - end.second;
+        double cross = Math.abs(dx1 * dy2 - dx2 * dy1);
+        return distance(x, end) + cross * 0.001;
     }
 
     static private double distance(Pair<Integer, Integer> a, Pair<Integer, Integer> b) {

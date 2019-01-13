@@ -186,7 +186,7 @@ public class ForageBroadcast extends ControlSystemMFN150 {
 		// STEER
 		result = steering_configuration.Value(curr_time);
 		abstract_robot.setSteerHeading(curr_time, result.t);
-		abstract_robot.setSpeed(curr_time, 1.0);
+		abstract_robot.setSpeed(curr_time, result.r > 0 ? 1.0 : 0);
 
 		// TURRET
 		result = turret_configuration.Value(curr_time);
